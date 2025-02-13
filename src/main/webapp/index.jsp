@@ -1,13 +1,32 @@
-<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html; charset=UTF-8" %>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>JSP - Hello World</title>
+    <meta charset="UTF-8">
+    <title>Login - Chase E-Banking</title>
+    <link rel="stylesheet" href="styles/style.css">create
+    <style>
+        body {
+            background: url('./resources/backdrop_login.png') no-repeat center center fixed;
+            background-size: cover;
+        }
+    </style>
 </head>
 <body>
-<h1><%= "Hello World!" %>
-</h1>
-<br/>
-<a href="hello-servlet">Hello Servlet</a>
+<div class="container">
+    <img src="resources/chase-bank.png" alt="Chase Bank Logo" class="logo">
+    <h1>Login</h1>
+    <form action="LoginServlet" method="post">
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <div class="remember-me">
+            <input type="checkbox" name="rememberMe" id="rememberMe">
+            <label for="rememberMe">Remember Me</label>
+        </div>
+        <input type="submit" value="Login">
+    </form>
+    <p>Don't have an account? <a href="register.jsp">Sign up</a></p>
+</div>
+
 </body>
 </html>
