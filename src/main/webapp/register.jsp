@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Login - Chase E-Banking</title>
+    <title>Register - Chase E-Banking</title>
     <link rel="stylesheet" href="styles/style.css">
     <style>
         body {
@@ -15,18 +15,15 @@
 <body>
 <div class="container">
     <img src="resources/chase-bank.png" alt="Chase Bank Logo" class="logo">
-    <h1>Login</h1>
-    <form action="LoginServlet" method="post">
+    <h1>Register</h1>
+    <form action="RegisterServlet" method="post">
         <input type="text" name="username" placeholder="Username" required>
         <input type="password" name="password" placeholder="Password" required>
-        <div class="remember-me">
-            <input type="checkbox" name="rememberMe" id="rememberMe">
-            <label for="rememberMe">Remember Me</label>
-        </div>
-        <input type="submit" value="Login">
+        <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="submit" value="Sign Up">
     </form>
-    <p>Don't have an account? <a href="register.jsp">Sign up</a></p>
+    <p>Already have an account? <a href="index.jsp">Login here</a></p>
 </div>
-
 </body>
 </html>
