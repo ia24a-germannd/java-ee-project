@@ -34,9 +34,12 @@ public class LoginServlet extends HttpServlet {
                 response.addCookie(userCookie);
             }
 
-            if (!userDAO.userHasAccount(userId)) {
-                String accountNumber = generateRandomAccountNumber();
-                userDAO.createAccount(userId, accountNumber);
+            int userInfo = userDAO.getUserId(username, password);
+            if (userInfo == -1) {
+                String accountNumberOne = generateRandomAccountNumber();
+                String accountNumberTwo = generateRandomAccountNumber();
+                userDAO.createAccount(userId, accountNumberOne, "Main Account");
+                userDAO.createAccount(userId, accountNumberTwo, "Savings Account");
             }
 
             response.sendRedirect("dashboard.jsp");

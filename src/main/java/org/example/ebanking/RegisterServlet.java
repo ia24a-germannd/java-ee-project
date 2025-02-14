@@ -7,6 +7,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 @WebServlet("/RegisterServlet")
 public class RegisterServlet extends HttpServlet {
@@ -31,12 +32,18 @@ public class RegisterServlet extends HttpServlet {
 
         int userId = userDAO.registerUser(username, password, email);
 
+        HttpSession session = request.getSession();
+        session.setAttribute("username", username);
+        session.setAttribute("user_id", userId);
+
         if (userId != -1) {
-            String accountNumber = generateRandomAccountNumber();
-            userDAO.createAccount(userId, accountNumber);
+            String accountNumberOne = generateRandomAccountNumber();
+            String accountNumberTwo = generateRandomAccountNumber();
+            userDAO.createAccount(userId, accountNumberOne, "Main Account");
+            userDAO.createAccount(userId, accountNumberTwo, "Savings Account");
             response.sendRedirect("dashboard.jsp?success=Account-created-successfully");
         } else {
-            response.sendRedirect("register.jsp?error=Registration-failed");
+            response.sendRedirect("error.jsp?error=Registration-failed");
         }
     }
 

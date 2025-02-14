@@ -25,27 +25,16 @@ public class UserDAO {
         return -1;
     }
 
-    public boolean userHasAccount(int userId) {
-        String sql = "SELECT account_id FROM Accounts WHERE user_id = ?";
-        try (Connection conn = DBConnector.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+    public boolean createAccount(int userId, String accountNumber, String accountType) {
+        String sql = "INSERT INTO Accounts (user_id, account_number, balance, account_type) VALUES (?, ?, 1000.00, ?)";
 
-            stmt.setInt(1, userId);
-            ResultSet rs = stmt.executeQuery();
-            return rs.next();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public boolean createAccount(int userId, String accountNumber) {
-        String sql = "INSERT INTO Accounts (user_id, account_number, balance) VALUES (?, ?, 1000.00)";
         try (Connection conn = DBConnector.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, userId);
             stmt.setString(2, accountNumber);
+            stmt.setString(3, accountType);
+
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -56,7 +45,6 @@ public class UserDAO {
     public int registerUser(String username, String password, String email) {
         String sql = "INSERT INTO Users (username, password, email) VALUES (?, ?, ?)";
         try (Connection conn = DBConnector.getConnection()) {
-            conn.setAutoCommit(false); // Start transaction
 
             try (PreparedStatement stmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
                 stmt.setString(1, username);
