@@ -1,10 +1,7 @@
 package org.example.ebanking;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.Random;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.WebServlet;
@@ -12,41 +9,48 @@ import jakarta.servlet.annotation.WebServlet;
 @WebServlet("/LoginServlet")
 public class LoginServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
+    private UserDAO userDAO;
+
+    @Override
+    public void init() {
+        userDAO = new UserDAO();
+    }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
         String rememberMe = request.getParameter("rememberMe");
 
-        try (Connection con = DBConnector.getConnection()) {
-            if (con == null) {
-                response.sendRedirect("login.jsp?error=Database connection failed");
-                return;
+        int userId = userDAO.getUserId(username, password);
+
+        if (userId != -1) {
+            HttpSession session = request.getSession();
+            session.setAttribute("username", username);
+            session.setAttribute("user_id", userId);
+
+            if (rememberMe != null) {
+                Cookie userCookie = new Cookie("username", username);
+                userCookie.setMaxAge(60 * 60 * 24 * 7);
+                response.addCookie(userCookie);
             }
 
-            String query = "SELECT * FROM Users WHERE username=? AND password=?";
-            PreparedStatement stmt = con.prepareStatement(query);
-            stmt.setString(1, username);
-            stmt.setString(2, password);
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                HttpSession session = request.getSession();
-                session.setAttribute("username", username);
-
-                if (rememberMe != null) {
-                    Cookie userCookie = new Cookie("username", username);
-                    userCookie.setMaxAge(60 * 60 * 24 * 7);
-                    response.addCookie(userCookie);
-                }
-
-                response.sendRedirect("dashboard.jsp");
-            } else {
-                response.sendRedirect("register.jsp");
+            if (!userDAO.userHasAccount(userId)) {
+                String accountNumber = generateRandomAccountNumber();
+                userDAO.createAccount(userId, accountNumber);
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            response.sendRedirect("login.jsp?error=Database error");
+
+            response.sendRedirect("dashboard.jsp");
+        } else {
+            response.sendRedirect("register.jsp");
         }
+    }
+
+    private String generateRandomAccountNumber() {
+        Random random = new Random();
+        StringBuilder accountNumber = new StringBuilder();
+        for (int i = 0; i < 16; i++) {
+            accountNumber.append(random.nextInt(10));
+        }
+        return accountNumber.toString();
     }
 }

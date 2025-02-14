@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Login - Chase E-Banking</title>
-    <link rel="stylesheet" href="styles/style.css">create
+    <link rel="stylesheet" href="styles/style.css">
     <style>
         body {
             background: url('./resources/backdrop_login.png') no-repeat center center fixed;
