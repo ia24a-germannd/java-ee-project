@@ -58,5 +58,8 @@
 
     </div>
 </div>
+<form action="index.jsp">
+    <button type="submit" class="logout-button">Logout</button>
+</form>
 </body>
 </html>
