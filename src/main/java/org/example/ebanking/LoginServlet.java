@@ -1,7 +1,6 @@
 package org.example.ebanking;
 
 import java.io.IOException;
-import java.util.Random;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import jakarta.servlet.annotation.WebServlet;
@@ -10,10 +9,12 @@ import jakarta.servlet.annotation.WebServlet;
 public class LoginServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private UserDAO userDAO;
+    private AccountDAO accountDAO;
 
     @Override
     public void init() {
         userDAO = new UserDAO();
+        accountDAO = new AccountDAO();
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -24,9 +25,13 @@ public class LoginServlet extends HttpServlet {
         int userId = userDAO.getUserId(username, password);
 
         if (userId != -1) {
+            int accountId = accountDAO.getAccountIdByUserId(userId);
+
             HttpSession session = request.getSession();
             session.setAttribute("username", username);
-            session.setAttribute("user_id", userId);
+            session.setAttribute("userId", userId);
+            session.setAttribute("accountId", accountId);
+
 
             if (rememberMe != null) {
                 Cookie userCookie = new Cookie("username", username);
@@ -34,26 +39,9 @@ public class LoginServlet extends HttpServlet {
                 response.addCookie(userCookie);
             }
 
-            int userInfo = userDAO.getUserId(username, password);
-            if (userInfo == -1) {
-                String accountNumberOne = generateRandomAccountNumber();
-                String accountNumberTwo = generateRandomAccountNumber();
-                userDAO.createAccount(userId, accountNumberOne, "Main Account");
-                userDAO.createAccount(userId, accountNumberTwo, "Savings Account");
-            }
-
-            response.sendRedirect("dashboard.jsp");
+            response.sendRedirect("dashboard");
         } else {
-            response.sendRedirect("register.jsp");
+            response.sendRedirect("login?error=Invalid-credentials");
         }
-    }
-
-    private String generateRandomAccountNumber() {
-        Random random = new Random();
-        StringBuilder accountNumber = new StringBuilder();
-        for (int i = 0; i < 16; i++) {
-            accountNumber.append(random.nextInt(10));
-        }
-        return accountNumber.toString();
     }
 }

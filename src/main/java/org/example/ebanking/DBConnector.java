@@ -1,8 +1,6 @@
 package org.example.ebanking;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class DBConnector {
 
@@ -13,7 +11,7 @@ public class DBConnector {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             con = DriverManager.getConnection(CONNECT_STRING);
-            con.setAutoCommit(false);
+            con.setAutoCommit(true);
             System.out.println("Database connection established.");
             return con;
         } catch (ClassNotFoundException e) {
@@ -35,5 +33,39 @@ public class DBConnector {
             e.printStackTrace();
         }
         return con;
+    }
+
+    public int executeUpdate(String sql, Object... params) {
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            for (int i = 0; i < params.length; i++) {
+                stmt.setObject(i + 1, params[i]);
+            }
+
+            return stmt.executeUpdate();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -1;
+        }
+    }
+
+    public ResultSet executeQuery(String sql, Object... params) {
+        try {
+            Connection conn = getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql);
+
+            // Set parameters
+            for (int i = 0; i < params.length; i++) {
+                stmt.setObject(i + 1, params[i]);
+            }
+
+            return stmt.executeQuery();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }

@@ -35,9 +35,19 @@ public class UserDAO {
             stmt.setString(2, accountNumber);
             stmt.setString(3, accountType);
 
-            return stmt.executeUpdate() > 0;
+            System.out.println("Creating account for user: " + userId);
+            int result = stmt.executeUpdate();
+            conn.commit();
+            System.out.println("Account created successfully");
+            return result > 0;
         } catch (SQLException e) {
+            System.err.println("Error creating account: " + e.getMessage());
             e.printStackTrace();
+            try {
+                DBConnector.getConnection().rollback();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
         }
         return false;
     }
