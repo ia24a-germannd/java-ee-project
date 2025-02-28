@@ -11,6 +11,7 @@ public class DBConnector {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             con = DriverManager.getConnection(CONNECT_STRING);
+            con.setAutoCommit(false);
             System.out.println("Database connection established.");
             return con;
         } catch (ClassNotFoundException e) {
@@ -36,16 +37,28 @@ public class DBConnector {
     }
 
     public int executeUpdate(String sql, Object... params) {
-        try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        try {
+            conn = getConnection();
+            stmt = conn.prepareStatement(sql);
 
             for (int i = 0; i < params.length; i++) {
                 stmt.setObject(i + 1, params[i]);
             }
 
-            return stmt.executeUpdate();
+            int result = stmt.executeUpdate();
+            conn.commit();
+            return result;
 
         } catch (SQLException e) {
+            try {
+                if (conn != null) {
+                    conn.rollback();
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
             e.printStackTrace();
             return -1;
         }
