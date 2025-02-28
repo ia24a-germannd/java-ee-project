@@ -74,7 +74,7 @@
 
 .check-container {
     width: 100%;
-    background-image: url('../resources/backdrop_login.png'); /* Keep consistent background */
+    background-image: url('../resources/backdrop_login.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;

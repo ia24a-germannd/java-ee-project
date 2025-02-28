@@ -12,7 +12,6 @@ public class Check {
     private String note;
     private String signatureFile;
 
-    // Constructors
     public Check() {}
 
     public Check(int checkId, int accountId, String recipientName, float amount,

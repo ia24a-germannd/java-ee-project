@@ -5,7 +5,9 @@ import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.Date;
+import java.sql.SQLException;
 import java.io.File;
 
 @WebServlet("/makeChecks")
@@ -17,12 +19,15 @@ import java.io.File;
 public class MakeCheckServlet extends HttpServlet {
     private CheckDAO checkDAO;
     private AccountDAO accountDAO;
+    private TransactionDAO transactionDAO;
     private static final String UPLOAD_DIRECTORY = "signatures";
+    private static final float FLAG_THRESHOLD = 5000.0f;
 
     @Override
     public void init() throws ServletException {
         checkDAO = new CheckDAO();
         accountDAO = new AccountDAO();
+        transactionDAO = new TransactionDAO();
     }
 
     @Override
@@ -39,6 +44,7 @@ public class MakeCheckServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        Connection conn = null;
         try {
             HttpSession session = request.getSession();
             Integer accountId = (Integer) session.getAttribute("accountId");
@@ -60,7 +66,6 @@ public class MakeCheckServlet extends HttpServlet {
 
             String note = request.getParameter("note");
 
-            // Handle file upload
             Part filePart = request.getPart("signature");
             String fileName = null;
             if (filePart != null) {
@@ -69,7 +74,6 @@ public class MakeCheckServlet extends HttpServlet {
                 File uploadDir = new File(uploadPath);
                 if (!uploadDir.exists()) uploadDir.mkdir();
 
-                // Create unique filename
                 fileName = System.currentTimeMillis() + "_" + fileName;
                 filePart.write(uploadPath + File.separator + fileName);
             }
@@ -88,6 +92,9 @@ public class MakeCheckServlet extends HttpServlet {
                 return;
             }
 
+            conn = DBConnector.getConnection(); // Get connection with autoCommit false
+
+            // Create check object
             Check check = new Check();
             check.setAccountId(accountId);
             check.setRecipientName(recipientName);
@@ -96,20 +103,32 @@ public class MakeCheckServlet extends HttpServlet {
             check.setNote(note);
             check.setSignatureFile(UPLOAD_DIRECTORY + File.separator + fileName);
 
-            boolean success = checkDAO.createCheck(check);
-            if (success) {
+            // Create transaction object
+            Transaction transaction = new Transaction();
+            transaction.setAccountId(accountId);
+            transaction.setAmount(-amount); // Negative amount for check payments
+            transaction.setRecipient(recipientName);
+            transaction.setFlagged(amount >= FLAG_THRESHOLD);
+
+            boolean checkCreated = checkDAO.createCheck(check);
+            if (checkCreated) {
                 float newBalance = account.getBalance() - amount;
                 account.setBalance(newBalance);
-                boolean balanceUpdated = accountDAO.updateBalance(account);
 
-                if (balanceUpdated) {
+                boolean balanceUpdated = accountDAO.updateBalance(account);
+                boolean transactionCreated = transactionDAO.createTransaction(transaction);
+
+                if (balanceUpdated && transactionCreated) {
+                    conn.commit();
                     session.setAttribute("balance", newBalance);
                     response.sendRedirect("dashboard");
                 } else {
-                    request.setAttribute("error", "Failed to update account balance");
+                    conn.rollback();
+                    request.setAttribute("error", "Failed to process the check");
                     request.getRequestDispatcher("makeCheck.jsp").forward(request, response);
                 }
             } else {
+                conn.rollback();
                 request.setAttribute("error", "Failed to create check");
                 request.getRequestDispatcher("makeCheck.jsp").forward(request, response);
             }
@@ -117,8 +136,25 @@ public class MakeCheckServlet extends HttpServlet {
         } catch (Exception e) {
             System.out.println("Error in MakeCheckServlet: " + e.getMessage());
             e.printStackTrace();
+
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+
             request.setAttribute("error", "An error occurred: " + e.getMessage());
             request.getRequestDispatcher("makeCheck.jsp").forward(request, response);
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 

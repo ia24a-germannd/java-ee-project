@@ -30,10 +30,8 @@ public class TransactionServlet extends HttpServlet {
         try {
             int accountId = Integer.parseInt(accountIdStr);
 
-            // Get all accounts for the user
             List<Account> userAccounts = accountDAO.getAccountsByUserId(userId);
 
-            // Find the specific account
             Account targetAccount = null;
             for (Account account : userAccounts) {
                 if (account.getAccountId() == accountId) {
@@ -47,14 +45,11 @@ public class TransactionServlet extends HttpServlet {
                 return;
             }
 
-            // Get transactions for the account
             List<Transaction> transactions = transactionDAO.getTransactionsByAccountId(accountId);
 
-            // Set attributes for the JSP
             request.setAttribute("transactions", transactions);
             request.setAttribute("accountNumber", targetAccount.getAccountNumber());
 
-            // Forward to the transactions JSP
             request.getRequestDispatcher("/transaction.jsp").forward(request, response);
 
         } catch (NumberFormatException e) {

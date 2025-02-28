@@ -13,6 +13,12 @@
     <link rel="stylesheet" href="styles/animation.css">
 </head>
 <body>
+<div class="header">
+    <img src="resources/chase-bank.png" alt="Logo" class="Logo">
+    <form action="index.jsp">
+        <button type="submit" class="btn primary">Logout</button>
+    </form>
+</div>
 <%String username = (String) session.getAttribute("username");%>
 
 <div class="dashboard-container">
@@ -38,17 +44,18 @@
                         <div class="account-balance">
                             <span class="balance-label">Available Balance</span>
                             <span class="balance-amount">
-                    ${account.balance}
-                </span>
+                                    ${account.balance}
+                            </span>
                         </div>
                         <div class="account-actions">
-                            <form action="makeChecks" method="get"  style="flex: 1;">
+                            <form action="makeChecks" method="get" style="flex: 1;">
                                 <input type="hidden" name="accountId" value="${account.accountId}">
                                 <button type="submit" class="btn primary" style="width: 100%;">Make a Check</button>
                             </form>
                             <form action="transactions" method="get" style="flex: 1;">
                                 <input type="hidden" name="accountId" value="${account.accountId}">
-                                <button type="submit" class="btn secondary" style="width: 100%;">View Transactions</button>
+                                <button type="submit" class="btn secondary" style="width: 100%;">View Transactions
+                                </button>
                             </form>
                         </div>
                     </div>
@@ -58,8 +65,5 @@
 
     </div>
 </div>
-<form action="index.jsp">
-    <button type="submit" class="logout-button">Logout</button>
-</form>
 </body>
 </html>
