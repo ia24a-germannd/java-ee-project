@@ -7,11 +7,10 @@ public class DBConnector {
     private static Connection con = null;
     private static final String CONNECT_STRING = "jdbc:mysql://localhost:3306/ChaseBank?user=root";
 
-    private Connection openConnection() {
+    private Connection openConnection() throws SQLException {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             con = DriverManager.getConnection(CONNECT_STRING);
-            con.setAutoCommit(true);
             System.out.println("Database connection established.");
             return con;
         } catch (ClassNotFoundException e) {
@@ -21,6 +20,7 @@ public class DBConnector {
             System.out.println("No connection to " + CONNECT_STRING);
             e.printStackTrace();
         }
+        con.commit();
         return null;
     }
 
