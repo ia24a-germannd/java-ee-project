@@ -24,29 +24,52 @@ public class RegisterServlet extends HttpServlet {
         String password = request.getParameter("password");
         String confirmPassword = request.getParameter("confirm_password");
         String email = request.getParameter("email");
+        String firstName = request.getParameter("firstName");
+        String lastName = request.getParameter("lastName");
 
         if (!password.equals(confirmPassword)) {
-            response.sendRedirect("register.jsp?error=Passwords-do-not-match");
+            response.sendRedirect("register?error=Passwords-do-not-match");
+            return;
+        }
+
+        int existingUserId = userDAO.getUserId(username, password);
+        if (existingUserId != -1) {
+            response.sendRedirect("login?error=User-already-exists");
             return;
         }
 
         int userId = userDAO.registerUser(username, password, email);
 
-        HttpSession session = request.getSession();
-        session.setAttribute("username", username);
-        session.setAttribute("user_id", userId);
-
         if (userId != -1) {
             String accountNumberOne = generateRandomAccountNumber();
             String accountNumberTwo = generateRandomAccountNumber();
-            userDAO.createAccount(userId, accountNumberOne, "Main Account");
-            userDAO.createAccount(userId, accountNumberTwo, "Savings Account");
-            response.sendRedirect("dashboard.jsp?success=Account-created-successfully");
+
+            boolean mainAccountCreated = userDAO.createAccount(userId, accountNumberOne, "Main Account");
+            boolean savingsAccountCreated = userDAO.createAccount(userId, accountNumberTwo, "Savings Account");
+
+            if (mainAccountCreated && savingsAccountCreated) {
+                HttpSession session = request.getSession();
+                session.setAttribute("username", username);
+                session.setAttribute("userId", userId);
+
+                if (firstName != null && !firstName.isEmpty()) {
+                    session.setAttribute("firstName", firstName);
+                }
+                if (lastName != null && !lastName.isEmpty()) {
+                    session.setAttribute("lastName", lastName);
+                }
+
+                session.setAttribute("email", email);
+                session.setAttribute("welcomeMessage", "Welcome to E-Banking, " + username + "!");
+
+                response.sendRedirect("dashboard");
+            } else {
+                response.sendRedirect("error?error=Account-creation-failed");
+            }
         } else {
-            response.sendRedirect("error.jsp?error=Registration-failed");
+            response.sendRedirect("error?error=Registration-failed");
         }
     }
-
 
     private String generateRandomAccountNumber() {
         Random random = new Random();
