@@ -24,7 +24,6 @@ public class Transaction {
         this.flagged = flagged;
     }
 
-    // Getters and Setters
     public int getTransactionId() { return transactionId; }
     public void setTransactionId(int transactionId) { this.transactionId = transactionId; }
     

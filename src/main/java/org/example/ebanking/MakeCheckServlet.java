@@ -60,7 +60,6 @@ public class MakeCheckServlet extends HttpServlet {
 
             String note = request.getParameter("note");
 
-            // Handle file upload
             Part filePart = request.getPart("signature");
             String fileName = null;
             if (filePart != null) {
@@ -69,7 +68,6 @@ public class MakeCheckServlet extends HttpServlet {
                 File uploadDir = new File(uploadPath);
                 if (!uploadDir.exists()) uploadDir.mkdir();
 
-                // Create unique filename
                 fileName = System.currentTimeMillis() + "_" + fileName;
                 filePart.write(uploadPath + File.separator + fileName);
             }
